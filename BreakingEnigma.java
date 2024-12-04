@@ -1,9 +1,6 @@
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class BreakingEnigma {
     public static boolean encryptAlg(String desiredHash, String recievedPlugBoard, String wordList){
@@ -13,10 +10,11 @@ public class BreakingEnigma {
             String word = scanner.next();
             List <String> saltedWord = saltGen(word);
             List <String> possibleHashs = new ArrayList<>();
-            for(int i = 0 ; i < saltedWord.size(); i++){
-               //possibleHashs = plugBoard(recievedPlugBoard);
+            plugBoard(recievedPlugBoard,saltedWord.get(0));
+            /*for(int i = 0 ; i < saltedWord.size(); i++){
+
             }
-            /*while (scanner.hasNext()) {
+            while (scanner.hasNext()) {
                 String word = scanner.next();
                 String saltedWord = saltGen(word);
             }*/
@@ -26,11 +24,26 @@ public class BreakingEnigma {
         }
         return false;
     }
-    public List<String> plugBoard(String recievedPlugBoard){
-        String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    public static void plugBoard(String recievedPlugBoard, String word){
         HashMap<Character, Character> plugBoardMap = parsePlugBoard(recievedPlugBoard);
-        
-        return null;
+        StringBuilder newWord = new StringBuilder();
+        for (char letter : word.toCharArray()) {
+            if (plugBoardMap.containsKey(word)) {
+                newWord.append(plugBoardMap.get(letter));
+            } else {
+                newWord.append(letter);
+            }
+        }
+
+    }
+    public static void enhancedCaesar(String wordAfterFirstPlugboard){
+        String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        Integer F = 0;
+        StringBuilder newWord = new StringBuilder();
+        Integer R = wordAfterFirstPlugboard.length();
+        for(int i = 0 ; i< wordAfterFirstPlugboard.length(); i++){
+            //char letter = wordAfterFirstPlugboard.charAt(i)
+        }
     }
     public static List<String> saltGen(String word){
         List<String> saltedCombinations = new ArrayList<>();
