@@ -5,33 +5,61 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class BreakingEnigma {
-    public static boolean breakingEnigmaAlg(String desiredHash, String recievedPlugBoard, String wordList){
+    public static boolean breakingEnigmaAlg(String desiredHash, String recievedPlugBoard, String wordList) {
+        boolean found = false;
+        List<String> words = new ArrayList<>();
         try {
             File file = new File(wordList);
             Scanner scanner = new Scanner(file);
-            String word = scanner.next();
-            List <String> saltedWords = saltGen(word);
-            List <String> hashes = new ArrayList<>();
-            for(int i = 0 ; i < saltedWords.size(); i++){
-                if (saltedWords.get(i).equals("QRCNBS>=")){
-                    System.out.printf(saltedWords.get(i));
-                    hashes= genHashesToCompare(recievedPlugBoard, saltedWords.get(i));
-                }
-                /*for(String hashToCompare: hashes){
-                    if(hashToCompare.equals(desiredHash)){
-                        System.out.println(hashToCompare);
-                    }
-                }*/
+            while (scanner.hasNext()) {
+                words.add(scanner.next());
             }
             scanner.close();
         } catch (FileNotFoundException e) {
             System.out.println("File not found: " + wordList);
+            return false;
         }
-        return false;
+        for (String word : words) {
+            System.out.println(word);
+            List<String> saltedWords = saltGen(word);
+            HashMap<String, String> hashAndFinalWord = new HashMap<>();
+            for (String saltedWord : saltedWords) {
+                hashAndFinalWord = genHashesToCompare(recievedPlugBoard, saltedWord);
+                for (Map.Entry<String, String> entry : hashAndFinalWord.entrySet()) {
+                    if (entry.getKey().equals(desiredHash)){
+                        System.out.println(entry.getKey());
+                        System.out.println(entry.getValue());
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) break;
+            }
+            if (found) break;
+        }
+        return found;
     }
-    public static List<String> genHashesToCompare(String plugBoard, String saltedWord){
+    public static HashMap<String,String>  genHashesToCompare(String plugBoard, String saltedWord){
         String word1plug = plugBoard(plugBoard,saltedWord);
-         /*List <String> allWordRotations = new ArrayList<>();
+        HashMap<String,String> hashAndFinalWord = new HashMap<>();
+        List <String> allWordRotations = new ArrayList<>();
+        List <String> allWordsRotationsAfter2plug = new ArrayList<>();
+        for (int r = 0 ; r < 25 ; r++){
+            for(int i = 0 ; i < 5; i++){
+                allWordRotations.add(enhancedCaesar(word1plug,r,i));
+            }
+        }
+        for(String rotation: allWordRotations){
+            allWordsRotationsAfter2plug.add(plugBoard(plugBoard,rotation));
+        }
+        for(String finalWord : allWordsRotationsAfter2plug){
+            hashAndFinalWord.put(genSHA256(finalWord),finalWord);
+        }
+        return hashAndFinalWord;
+    }
+    public static List<String> genHashesToCompareOld(String plugBoard, String saltedWord){
+        String word1plug = plugBoard(plugBoard,saltedWord);
+        List <String> allWordRotations = new ArrayList<>();
         List <String> allWordsRotationsAfter2plug = new ArrayList<>();
         List<String> generatedHashes = new ArrayList<>();
         for (int r = 0 ; r < 25 ; r++){
@@ -39,17 +67,13 @@ public class BreakingEnigma {
                 allWordRotations.add(enhancedCaesar(word1plug,r,i));
             }
         }
-        for (int i = 0 ; i < allWordRotations.size(); i++){
-            System.out.println(allWordRotations.get(i));
-        }
        for(String rotation: allWordRotations){
             allWordsRotationsAfter2plug.add(plugBoard(plugBoard,rotation));
-        }*/
-        /*for(String finalWord : allWordsRotationsAfter2plug){
+        }
+        for(String finalWord : allWordsRotationsAfter2plug){
             generatedHashes.add(genSHA256(finalWord));
         }
-        return generatedHashes;*/
-        return null;
+        return generatedHashes;
     }
     public static String genSHA256(String word){
         try {
@@ -84,13 +108,14 @@ public class BreakingEnigma {
         String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         StringBuilder newWord = new StringBuilder();
         int alphabetSize = alphabet.length();
+        int currentRotation = rotation;
         for (int i = 0; i < word.length(); i++) {
             char letter = word.charAt(i);
             if (alphabet.contains(Character.toString(letter))) {
-                // Find the position in the alphabet AKA Unicode of the letter
                 int originalPosition = letter - 'A';
-                int newPosition = (originalPosition + rotation + increment) % alphabetSize;
+                int newPosition = (originalPosition + currentRotation) % alphabetSize;
                 newWord.append(alphabet.charAt(newPosition));
+                currentRotation += increment;
             } else {
                 newWord.append(letter);
             }
@@ -175,7 +200,7 @@ public class BreakingEnigma {
             System.out.println("Hash: " + validateHash(hash));
             System.out.println("PlugBoard: " + validatePlugBoard(plugBoard));
             System.out.println("File: " + validateFile(wordList));
-            if(validateHash(hash) && validatePlugBoard(plugBoard) && validateFile(wordList)) {
+            if(validateHash(hashRodas) && validatePlugBoard(plugBoardRodas) && validateFile(wordList)) {
                 breakingEnigmaAlg(hash,plugBoard,wordList);
             }
         }
