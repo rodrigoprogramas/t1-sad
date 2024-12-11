@@ -20,14 +20,12 @@ public class BreakingEnigma {
             return false;
         }
         for (String word : words) {
-            System.out.println(word);
             List<String> saltedWords = saltGen(word);
             HashMap<String, String> hashAndFinalWord = new HashMap<>();
             for (String saltedWord : saltedWords) {
                 hashAndFinalWord = genHashesToCompare(recievedPlugBoard, saltedWord);
                 for (Map.Entry<String, String> entry : hashAndFinalWord.entrySet()) {
                     if (entry.getKey().equals(desiredHash)){
-                        System.out.println(entry.getKey());
                         System.out.println(entry.getValue());
                         found = true;
                         break;
@@ -45,7 +43,7 @@ public class BreakingEnigma {
         List <String> allWordRotations = new ArrayList<>();
         List <String> allWordsRotationsAfter2plug = new ArrayList<>();
         for (int r = 0 ; r < 25 ; r++){
-            for(int i = 0 ; i < 5; i++){
+            for(int i = 0 ; i < 25; i++){
                 allWordRotations.add(enhancedCaesar(word1plug,r,i));
             }
         }
@@ -56,24 +54,6 @@ public class BreakingEnigma {
             hashAndFinalWord.put(genSHA256(finalWord),finalWord);
         }
         return hashAndFinalWord;
-    }
-    public static List<String> genHashesToCompareOld(String plugBoard, String saltedWord){
-        String word1plug = plugBoard(plugBoard,saltedWord);
-        List <String> allWordRotations = new ArrayList<>();
-        List <String> allWordsRotationsAfter2plug = new ArrayList<>();
-        List<String> generatedHashes = new ArrayList<>();
-        for (int r = 0 ; r < 25 ; r++){
-            for(int i = 0 ; i < 5; i++){
-                allWordRotations.add(enhancedCaesar(word1plug,r,i));
-            }
-        }
-       for(String rotation: allWordRotations){
-            allWordsRotationsAfter2plug.add(plugBoard(plugBoard,rotation));
-        }
-        for(String finalWord : allWordsRotationsAfter2plug){
-            generatedHashes.add(genSHA256(finalWord));
-        }
-        return generatedHashes;
     }
     public static String genSHA256(String word){
         try {
@@ -108,14 +88,13 @@ public class BreakingEnigma {
         String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         StringBuilder newWord = new StringBuilder();
         int alphabetSize = alphabet.length();
-        int currentRotation = rotation;
         for (int i = 0; i < word.length(); i++) {
             char letter = word.charAt(i);
             if (alphabet.contains(Character.toString(letter))) {
                 int originalPosition = letter - 'A';
-                int newPosition = (originalPosition + currentRotation) % alphabetSize;
+                int inc = i * increment;
+                int newPosition = (originalPosition + rotation + inc) % alphabetSize;
                 newWord.append(alphabet.charAt(newPosition));
-                currentRotation += increment;
             } else {
                 newWord.append(letter);
             }
@@ -185,7 +164,7 @@ public class BreakingEnigma {
             String plugBoard = args[1];
             String wordList = args[2];
             if(validateHash(hash) && validatePlugBoard(plugBoard) && validateFile(wordList)){
-                System.out.println("Começar Cifra do vladir");
+                breakingEnigmaAlg(hash,plugBoard,wordList);
             }else{
                 System.out.println("Hash: " + validateHash(hash));
                 System.out.println("PlugBoard: " + validatePlugBoard(plugBoard));
@@ -196,12 +175,9 @@ public class BreakingEnigma {
             String hash = "97f30f1470a9cb882bd1dd84f741f31d842ff332f935bce9425875bcd1e278bf";
             String plugBoardRodas ="{'K': 'G', 'Y': 'O', 'V': 'I', 'H': 'D', 'Z': 'T', 'M': 'P', 'U': 'C', 'J': 'L', 'N': 'A', 'S': 'W'}";
             String plugBoard = "{'A': 'D', 'E': 'K', 'Y': 'U', 'H': 'E', 'C': 'G', 'L': 'S', 'T': 'Y', 'Q': 'C', 'S': 'I', 'F': 'L', 'V': 'F', 'M': 'R', 'K': 'B', 'I': 'V', 'N': 'M', 'Z': 'A', 'W': 'J', 'D': 'W', 'B': 'X', 'J': 'Z'}";
-            String wordList = "wordlist.txt";
-            System.out.println("Hash: " + validateHash(hash));
-            System.out.println("PlugBoard: " + validatePlugBoard(plugBoard));
-            System.out.println("File: " + validateFile(wordList));
+            String wordList = "src/wordlist.txt";
             if(validateHash(hashRodas) && validatePlugBoard(plugBoardRodas) && validateFile(wordList)) {
-                breakingEnigmaAlg(hash,plugBoard,wordList);
+                breakingEnigmaAlg(hashRodas,plugBoardRodas,wordList);
             }
         }
     }
