@@ -171,14 +171,7 @@ public class BreakingEnigma {
                 System.out.println("File: " + validateFile(wordList));
             }
         } else {
-            String hashRodas = "20a64aac202ac6822346e3c73317bad8774e7fdce2f578174da78f6e6c73e434";
-            String hash = "97f30f1470a9cb882bd1dd84f741f31d842ff332f935bce9425875bcd1e278bf";
-            String plugBoardRodas ="{'K': 'G', 'Y': 'O', 'V': 'I', 'H': 'D', 'Z': 'T', 'M': 'P', 'U': 'C', 'J': 'L', 'N': 'A', 'S': 'W'}";
-            String plugBoard = "{'A': 'D', 'E': 'K', 'Y': 'U', 'H': 'E', 'C': 'G', 'L': 'S', 'T': 'Y', 'Q': 'C', 'S': 'I', 'F': 'L', 'V': 'F', 'M': 'R', 'K': 'B', 'I': 'V', 'N': 'M', 'Z': 'A', 'W': 'J', 'D': 'W', 'B': 'X', 'J': 'Z'}";
-            String wordList = "src/wordlist.txt";
-            if(validateHash(hashRodas) && validatePlugBoard(plugBoardRodas) && validateFile(wordList)) {
-                breakingEnigmaAlg(hashRodas,plugBoardRodas,wordList);
-            }
+            System.out.println("Insufficient arguments.");
         }
     }
 }
