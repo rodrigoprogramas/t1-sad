@@ -142,11 +142,11 @@ public class BreakingEnigma {
     }
     private static HashMap<Character, Character> parsePlugBoard(String plugBoardInput) {
         HashMap<Character, Character> plugBoardMap = new HashMap<>();
-        plugBoardInput = plugBoardInput.replaceAll("[{}']", "").trim();
-        plugBoardInput = plugBoardInput.replaceAll("\\s+", "");
+        plugBoardInput = plugBoardInput.replaceAll("[{}']", "").trim(); //remove {}
+        plugBoardInput = plugBoardInput.replaceAll("\\s+", "");// remove spaces 
         String[] mappings = plugBoardInput.split(",");
         for (String mapping : mappings) {
-            // Split the "key:value" pair
+            // split the "key:value" pair
             String[] pair = mapping.split(":");
             if (pair.length == 2 && pair[0].length() == 1 && pair[1].length() == 1) {
                 char from = pair[0].charAt(0);
@@ -171,7 +171,7 @@ public class BreakingEnigma {
                 System.out.println("File: " + validateFile(wordList));
             }
         } else {
-            System.out.println("Insufficient arguments.");
+            System.out.println("Invalid arguments.");
         }
     }
 }
