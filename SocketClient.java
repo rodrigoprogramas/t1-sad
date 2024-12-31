@@ -93,6 +93,10 @@ public class SocketClient {
         CaesarEnigma enigma = new CaesarEnigma();
         try{
             enigma.configure("C:\\kp\\CTESP2ANO-local\\sad\\1trabalhoPratico\\sprint2\\t1-sad\\utils\\CONFIG_FILE.xml");
+            String message = enigma.encrypt("SOU O VSKII!");
+            System.out.println(message);
+            System.out.println(enigma.decrypt(message));
+
         }catch (Exception e){
             System.out.println("op");
         }

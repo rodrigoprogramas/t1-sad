@@ -17,10 +17,38 @@ public class CaesarEnigma implements  EncryptionAlgorithm{
         this.alphabet = null;
         this.rotationKey = 0;
     }
-    public String encrypt(String cleartext){
-        return null;
+    public String encrypt(String cleartext) {
+        StringBuilder encryptedWord = new StringBuilder();
+        int alphabetSize = this.alphabet.length();
+        for (int i = 0; i < cleartext.length(); i++) {
+            char letter = cleartext.charAt(i);
+            int originalPosition = this.alphabet.indexOf(letter);
+            if (originalPosition != -1) {
+                int inc = i * this.increment;
+                int newPosition = (originalPosition + this.rotationKey + inc) % alphabetSize;
+                encryptedWord.append(this.alphabet.charAt(newPosition));
+            } else {
+                encryptedWord.append(letter);
+            }
+        }
+        return encryptedWord.toString();
     }
-    public String decrypt(String ciphertext) { return "";}
+    public String decrypt(String ciphertext) {
+        StringBuilder originalWord = new StringBuilder();
+        int alphabetSize = this.alphabet.length();
+        for (int i = 0; i < ciphertext.length(); i++) {
+            char letter = ciphertext.charAt(i);
+            int letterPosition = this.alphabet.indexOf(letter);
+            if (letterPosition != -1) {
+                int inc = i * this.increment;
+                int originalPosition = ((letterPosition - this.rotationKey - inc) % alphabetSize + alphabetSize) % alphabetSize; // Ex: (5 - 3 - 4) % 26 = -2 After normalization: ((-2 + 26) % 26) = 24
+                originalWord.append(this.alphabet.charAt(originalPosition));
+            } else {
+                originalWord.append(letter);
+            }
+        }
+        return originalWord.toString();
+    }
     public void configure(String configurationFilePath) throws Exception {
         try{
             File xmlFile = new File(configurationFilePath);
@@ -32,6 +60,7 @@ public class CaesarEnigma implements  EncryptionAlgorithm{
             String rotation = xmlDoc.getElementsByTagName("encryption-key").item(0).getTextContent().trim();
             String increment = xmlDoc.getElementsByTagName("increment-factor").item(0).getTextContent().trim();
             String plugBoard = xmlDoc.getElementsByTagName("plugboard").item(0).getTextContent().trim();
+            this.plugBoard = plugBoard;
             this.rotationKey = Integer.valueOf(rotation);
             this.increment = Integer.valueOf(increment);
             setAlphabet(alphabetConfig);
@@ -72,22 +101,6 @@ public class CaesarEnigma implements  EncryptionAlgorithm{
             alphabetBuilder.append(ch);
         }
         this.alphabet = alphabetBuilder.toString();
-    }
-    private String caesarEnigma(String word){
-        StringBuilder encryptedWord = new StringBuilder();
-        int alphabetSize = this.alphabet.length();
-        for (int i = 0; i < word.length(); i++) {
-            char letter = word.charAt(i);
-            if (this.alphabet.contains(Character.toString(letter))) {
-                int originalPosition = letter - 'A';
-                int inc = i * this.increment;
-                int newPosition = (originalPosition + this.rotationKey + inc) % alphabetSize;
-                encryptedWord.append(alphabet.charAt(newPosition));
-            } else {
-                encryptedWord.append(letter);
-            }
-        }
-        return encryptedWord.toString();
     }
     private void setPlugBoardMap(String plugBoardInput) {
         HashMap<Character, Character> plugBoardMap = new HashMap<>();
