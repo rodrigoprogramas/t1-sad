@@ -15,7 +15,7 @@ public class SocketClient {
     // server IP address
     final String SERVER_IP = "127.0.0.1";
     final String CLOSE_COMMAND = "BYE";
-    
+
     // location in the command line arguments' array where the path is provided
     static int COMMAND_LINE_ARGUMENT_FILE_PATH = 0;
 
@@ -24,28 +24,57 @@ public class SocketClient {
      * @param port - port to connect the client to
      */
     public void startConnection(int port) {
-        // TODO
+        try {
+            this.socket = new Socket(SERVER_IP, port);
+            this.output = new PrintWriter(socket.getOutputStream(), true); // Auto flush ativado
+            this.input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            System.out.println("Connected to the server at " + SERVER_IP + ":" + port);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * Handle the client's communications
      */
     public void handleClientCommunications(String clientInput) {
-        // TODO
+        try {
+            String encryptedMessage = encrypt(clientInput);
+            output.println(encryptedMessage);
+            String serverResponse = input.readLine();
+            if (serverResponse != null) {
+                String decryptedMessage = decrypt(serverResponse);
+                System.out.println("Server response: " + decryptedMessage);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
-    
+
     /**
      * notify the server to close the session
      */
     private void sendCloseCommand() {
-        // TODO
+        try {
+            output.println(CLOSE_COMMAND);
+            stop();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * Close ALL client I/O
      */
     public void stop() throws IOException {
-        // TODO
+        try {
+            if (input != null) input.close();
+            if (output != null) output.close();
+            if (socket != null) socket.close();
+            System.out.println("Connection closed.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -53,7 +82,12 @@ public class SocketClient {
      * @param filePath - path where the configuration file is located
      */
     private void configureEncryptionAlgorithm(String filePath) {
-        // TODO
+        this.encryptionAlgorithm = new CaesarEnigma();
+        try{
+            this.encryptionAlgorithm.configure(filePath);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -90,23 +124,24 @@ public class SocketClient {
     * @param args - command line arguments. args[0] SHOULD contain the absolute path for the configuration file
     */
     public static void main(String[] args) {
-        CaesarEnigma enigma = new CaesarEnigma();
-        try{
-            enigma.configure("C:\\kp\\CTESP2ANO-local\\sad\\1trabalhoPratico\\sprint2\\t1-sad\\utils\\CONFIG_FILE.xml");
-            String message = enigma.encrypt("SOU O VSKII!");
-            System.out.println(message);
-            System.out.println(enigma.decrypt(message));
+        if (args.length == 1){
+            SocketClient socketClient = new SocketClient();
+            socketClient.configureEncryptionAlgorithm(args[0]);
+            socketClient.startConnection(433);
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("SocketClient started. Start typing your messages...");
+            while (true) {
+                String userInput = scanner.nextLine();
+                if (userInput.equalsIgnoreCase(socketClient.CLOSE_COMMAND)) {
+                    socketClient.sendCloseCommand();
+                    break;
+                }
+                socketClient.handleClientCommunications(userInput);
+            }
 
-        }catch (Exception e){
-            System.out.println("op");
+            scanner.close();
+        }else{
+            System.out.println("Invalid arguments.");
         }
-
-        // configure encryption algorithm
-
-        // start the client
-        
-        // keep processing user input
-
-        // close the connection when user uses the CLOSE command or an error occurs
     }
 }

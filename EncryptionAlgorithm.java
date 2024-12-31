@@ -7,7 +7,7 @@ import java.io.IOException;
 /**
  * The interface that EnhancedCaesar should implement to be able to interact with the SocketServer & SocketClient
  */
-interface EncryptionAlgorithm {
+public interface EncryptionAlgorithm {
 
     String encrypt(String cleartext);
 
