@@ -122,7 +122,7 @@ public class SocketServer {
             System.exit(1);
         }
         SocketServer socketServer = new SocketServer();
-        String configFilePath = args[0];
+        String configFilePath = args[COMMAND_LINE_ARGUMENT_FILE_PATH];
         socketServer.configureEncryptionAlgorithm(configFilePath);
         try {
             socketServer.start(12345);
@@ -143,11 +143,9 @@ public class SocketServer {
                 System.err.println("Error processing client communication: " + e.getMessage());
                 e.printStackTrace();
             }
-
         } catch (IOException e) {
             System.err.println("Error starting server: " + e.getMessage());
             e.printStackTrace();
         }
-        System.out.println("Server stopped.");
     }
 }

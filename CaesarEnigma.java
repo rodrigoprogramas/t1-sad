@@ -140,14 +140,9 @@ public class CaesarEnigma implements  EncryptionAlgorithm{
                 plugBoardMap.put(to, from);
             } else {
                 System.out.println("Invalid input format: " + mapping);
-                return; // Exit with error
+                return;
             }
         }
-        // Print mappings
-        for (Map.Entry<Character, Character> plug : plugBoardMap.entrySet()) {
-            System.out.println("Key: " + plug.getKey() + " -> Value: " + plug.getValue());
-        }
-        // Assign validated map
         this.plugBoardMap = plugBoardMap;
     }
 

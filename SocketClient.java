@@ -20,10 +20,7 @@ public class SocketClient {
     // location in the command line arguments' array where the path is provided
     static int COMMAND_LINE_ARGUMENT_FILE_PATH = 0;
 
-    /**
-     * connect the client to the server at `SERVER_IP` on the given port
-     * @param port - port to connect the client to
-     */
+
     public void startConnection(int port) {
         try {
             this.socket = new Socket(SERVER_IP, port);
@@ -133,24 +130,23 @@ public class SocketClient {
     * @param args - command line arguments. args[0] SHOULD contain the absolute path for the configuration file
     */
     public static void main(String[] args) {
-        if (args.length == 1){
-            SocketClient socketClient = new SocketClient();
-            socketClient.configureEncryptionAlgorithm(args[0]);
-            socketClient.startConnection(12345);
-            Scanner scanner = new Scanner(System.in);
-            System.out.println("SocketClient started. Start typing your messages...");
-            while (true) {
-                String userInput = scanner.nextLine();
-                if (userInput.equalsIgnoreCase(socketClient.CLOSE_COMMAND)) {
-                    socketClient.sendCloseCommand();
-                    break;
-                }
-                socketClient.handleClientCommunications(userInput);
-            }
-
-            scanner.close();
-        }else{
-            System.out.println("Invalid arguments.");
+        if (args.length != 1) {
+            System.out.println("Usage: java SocketClient <encryption-config-file-path>");
+            System.exit(1);
         }
+        SocketClient socketClient = new SocketClient();
+        socketClient.configureEncryptionAlgorithm(args[COMMAND_LINE_ARGUMENT_FILE_PATH]);
+        socketClient.startConnection(12345);
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("SocketClient started. Start typing your messages...");
+        while (true) {
+            String userInput = scanner.nextLine();
+            if (userInput.equalsIgnoreCase(socketClient.CLOSE_COMMAND)) {
+                socketClient.sendCloseCommand();
+                break;
+            }
+            socketClient.handleClientCommunications(userInput);
+        }
+        scanner.close();
     }
 }
