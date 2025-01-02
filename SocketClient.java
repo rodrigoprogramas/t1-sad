@@ -1,6 +1,7 @@
 import javax.print.DocFlavor;
 import java.net.*;
 import java.io.*;
+import java.sql.SQLOutput;
 import java.util.Scanner;
 
 public class SocketClient {
@@ -26,11 +27,12 @@ public class SocketClient {
     public void startConnection(int port) {
         try {
             this.socket = new Socket(SERVER_IP, port);
-            this.output = new PrintWriter(socket.getOutputStream(), true); // Auto flush ativado
+            this.output = new PrintWriter(socket.getOutputStream(), true);
             this.input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             System.out.println("Connected to the server at " + SERVER_IP + ":" + port);
         } catch (Exception e) {
             e.printStackTrace();
+            System.exit(1);
         }
     }
 
@@ -39,12 +41,13 @@ public class SocketClient {
      */
     public void handleClientCommunications(String clientInput) {
         try {
-            String encryptedMessage = encrypt(clientInput);
+            String encryptedMessage = encrypt(clientInput.toUpperCase());
             output.println(encryptedMessage);
             String serverResponse = input.readLine();
             if (serverResponse != null) {
                 String decryptedMessage = decrypt(serverResponse);
-                System.out.println("Server response: " + decryptedMessage);
+                System.out.println("Server response: " + serverResponse);
+                System.out.println("Decrypted Message: " + decryptedMessage);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -114,7 +117,13 @@ public class SocketClient {
                 '}' +
                 "EncryptionAlgorithm: " + encryptionAlgorithm;
     }
+    public Scanner getInputScanner() {
+        return inputScanner;
+    }
 
+    public void setInputScanner(Scanner inputScanner) {
+        this.inputScanner = inputScanner;
+    }
     /**
     * __Reminders:__
     * - validate inputs
@@ -127,7 +136,7 @@ public class SocketClient {
         if (args.length == 1){
             SocketClient socketClient = new SocketClient();
             socketClient.configureEncryptionAlgorithm(args[0]);
-            socketClient.startConnection(433);
+            socketClient.startConnection(12345);
             Scanner scanner = new Scanner(System.in);
             System.out.println("SocketClient started. Start typing your messages...");
             while (true) {

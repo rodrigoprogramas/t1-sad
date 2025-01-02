@@ -11,55 +11,31 @@ public class SocketServer {
     private BufferedReader input;
 
     private EncryptionAlgorithm encryptionAlgorithm;
-
     /**
      * start the server and wait for connections on the given port
 
      * @param port - port to connect the client to
      */
-    public void start(int port) {
+    public void start(int port) throws IOException {
         System.out.println("Starting server...");
         try (ServerSocket serverSocket = new ServerSocket(port)) {
-            System.out.println("Server started. Waiting for a connection...");
-            try (Socket clientSocket = serverSocket.accept();
-                PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true);
-                BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
-                System.out.println("Client connected!");
-                String clientMessage;
-                while ((clientMessage = input.readLine()) != null) {
-                    if ("BYE".equalsIgnoreCase(clientMessage)) {
-                        System.out.println("Client requested to close the connection.");
-                        break;
-                    } else {
-                        processServerCommunications(clientMessage, output);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            System.err.println("Error in server operation: " + e.getMessage());
-            e.printStackTrace();
-        } finally {
-            System.out.println("Server stopped.");
-            stop();
+            System.out.println("Server started. Waiting for connections...");
+            Socket clientSocket = serverSocket.accept();
+            System.out.println("Client connected!");
+            this.clientSocket = clientSocket;
         }
     }
-
     /**
      * Handle messages received on the server and log them with the respective timestamp
      */
-    public void processServerCommunications(String message, PrintWriter output) {
-        try {
-            String decryptedMessage = decrypt(message);
-            LocalDateTime timestamp = LocalDateTime.now();
-            System.out.println("Message received: (" + message + ")");
-            System.out.println("Decrypted message: " + decryptedMessage);
-            System.out.println("Received on: " + timestamp);
-        } catch (Exception e) {
-            System.err.println("Error processing client message: " + e.getMessage());
-            e.printStackTrace();
-        }
+    public void processServerCommunications(String message) {
+        String decryptedMessage = decrypt(message);
+        LocalDateTime timestamp = LocalDateTime.now();
+        System.out.println("Message received: (" + message + ")");
+        System.out.println("Decrypted message: " + decryptedMessage);
+        System.out.println("Received on: " + timestamp);
+        output.println(encrypt("MESSAGE RECEIVED ON " + timestamp));
     }
-
     /**
      * Terminate the service - close ALL I/O
      */
@@ -115,6 +91,21 @@ public class SocketServer {
 
     // location in the command line arguments' array where the path is provided
     static int COMMAND_LINE_ARGUMENT_FILE_PATH = 0;
+    public Socket getClientSocket() {
+        return clientSocket;
+    }
+    public PrintWriter getOutput() {
+        return output;
+    }
+    public void setOutput(PrintWriter output) {
+        this.output = output;
+    }
+    public BufferedReader getInput() {
+        return input;
+    }
+    public void setInput(BufferedReader input) {
+        this.input = input;
+    }
 
     /**
     * __Reminders:__
@@ -126,19 +117,37 @@ public class SocketServer {
     * @param args - command line arguments. args[0] SHOULD contain the absolute path for the configuration file
     */
     public static void main(String[] args) {
-        SocketServer socketServer = new SocketServer();
-        if (args.length == 1){
-            socketServer.configureEncryptionAlgorithm(args[0]);
-        }else{
-            System.out.println("Invalid arguments.");
+        if (args.length != 1) {
+            System.out.println("Usage: java SocketServer <encryption-config-file-path>");
             System.exit(1);
         }
-        socketServer.start(433);
-        // start the server
+        SocketServer socketServer = new SocketServer();
+        String configFilePath = args[0];
+        socketServer.configureEncryptionAlgorithm(configFilePath);
+        try {
+            socketServer.start(12345);
+            Socket clientSocket = socketServer.getClientSocket();
+            socketServer.setInput(new BufferedReader(new InputStreamReader(clientSocket.getInputStream())));
+            socketServer.setOutput(new PrintWriter(clientSocket.getOutputStream(), true));
+            try{
+                String clientMessage;
+                while ((clientMessage = socketServer.getInput().readLine()) != null) {
+                    if ("BYE".equalsIgnoreCase(clientMessage)) {
+                        System.out.println("Client requested to close the connection.");
+                        break;
+                    }
+                    socketServer.getOutput().flush();
+                    socketServer.processServerCommunications(clientMessage);
+                }
+            } catch (IOException e) {
+                System.err.println("Error processing client communication: " + e.getMessage());
+                e.printStackTrace();
+            }
 
-        // keep processing messages
-      
-        // stop the server
-        
+        } catch (IOException e) {
+            System.err.println("Error starting server: " + e.getMessage());
+            e.printStackTrace();
+        }
+        System.out.println("Server stopped.");
     }
 }

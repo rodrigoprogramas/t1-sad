@@ -1,9 +1,8 @@
-import java.util.HashMap;
+import java.util.*;
+
 import org.w3c.dom.*;
 import javax.xml.parsers.*;
 import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
 
 public class CaesarEnigma implements  EncryptionAlgorithm{
     private String plugBoard;
@@ -18,10 +17,11 @@ public class CaesarEnigma implements  EncryptionAlgorithm{
         this.rotationKey = 0;
     }
     public String encrypt(String cleartext) {
+        String wordPlugged = plugBoard(cleartext);
         StringBuilder encryptedWord = new StringBuilder();
         int alphabetSize = this.alphabet.length();
-        for (int i = 0; i < cleartext.length(); i++) {
-            char letter = cleartext.charAt(i);
+        for (int i = 0; i < wordPlugged.length(); i++) {
+            char letter = wordPlugged.charAt(i);
             int originalPosition = this.alphabet.indexOf(letter);
             if (originalPosition != -1) {
                 int inc = i * this.increment;
@@ -31,23 +31,35 @@ public class CaesarEnigma implements  EncryptionAlgorithm{
                 encryptedWord.append(letter);
             }
         }
-        return encryptedWord.toString();
+        return plugBoard(encryptedWord.toString());
+    }
+    private String plugBoard(String word){
+        StringBuilder newWord = new StringBuilder();
+        for (char letter : word.toCharArray()) {
+            if (this.plugBoardMap.containsKey(letter)) {
+                newWord.append(this.plugBoardMap.get(letter));
+            } else {
+                newWord.append(letter);
+            }
+        }
+        return newWord.toString();
     }
     public String decrypt(String ciphertext) {
+        String wordPlugged = plugBoard(ciphertext);
         StringBuilder originalWord = new StringBuilder();
         int alphabetSize = this.alphabet.length();
-        for (int i = 0; i < ciphertext.length(); i++) {
-            char letter = ciphertext.charAt(i);
+        for (int i = 0; i < wordPlugged.length(); i++) {
+            char letter = wordPlugged.charAt(i);
             int letterPosition = this.alphabet.indexOf(letter);
             if (letterPosition != -1) {
                 int inc = i * this.increment;
-                int originalPosition = ((letterPosition - this.rotationKey - inc) % alphabetSize + alphabetSize) % alphabetSize; // Ex: (5 - 3 - 4) % 26 = -2 After normalization: ((-2 + 26) % 26) = 24
+                int originalPosition = ((letterPosition - this.rotationKey - inc) % alphabetSize + alphabetSize) % alphabetSize;
                 originalWord.append(this.alphabet.charAt(originalPosition));
             } else {
                 originalWord.append(letter);
             }
         }
-        return originalWord.toString();
+        return plugBoard(originalWord.toString());
     }
     public void configure(String configurationFilePath) throws Exception {
         try{
@@ -73,8 +85,8 @@ public class CaesarEnigma implements  EncryptionAlgorithm{
             System.exit(1);
         }
     }
-    private void setAlphabet(String alphabetConfig){
-        Set<Character> uniqueChars = new HashSet<>();
+    private void setAlphabet(String alphabetConfig) {
+        Set<Character> uniqueChars = new LinkedHashSet<>();
         String[] alphabetSetter = alphabetConfig.split("\\+");
         for (String config : alphabetSetter) {
             String toAdd = "";
@@ -104,28 +116,39 @@ public class CaesarEnigma implements  EncryptionAlgorithm{
     }
     private void setPlugBoardMap(String plugBoardInput) {
         HashMap<Character, Character> plugBoardMap = new HashMap<>();
-        plugBoardInput = plugBoardInput.replaceAll("[{}']", "").trim(); //remove {}
-        plugBoardInput = plugBoardInput.replaceAll("\\s+", "");// remove spaces
+        plugBoardInput = plugBoardInput.replaceAll("[{}']", "").trim(); // Remove braces and quotes
+        plugBoardInput = plugBoardInput.replaceAll("\\s+", ""); // Remove spaces
         String[] mappings = plugBoardInput.split(",");
         for (String mapping : mappings) {
-            // split the "key:value" pair
             String[] pair = mapping.split(":");
             if (pair.length == 2 && pair[0].length() == 1 && pair[1].length() == 1) {
                 char from = pair[0].charAt(0);
                 char to = pair[1].charAt(0);
+                if (from == to){
+                    System.out.println("Warning: Character " + from + " cannot map to itself. Skipping.");
+                    continue;
+                }
                 if (plugBoardMap.containsKey(from)) {
-                    System.out.println("Char" + from + " is already mapped");
-                    this.plugBoardMap = null;
+                    System.out.println("Warning: Character " + from + " is already mapped to " + plugBoardMap.get(from) + ". Skipping.");
+                    continue;
                 }
                 if (plugBoardMap.containsValue(to)) {
-                    System.out.println("Char" + to + " was already found in another mapping");
-                    this.plugBoardMap = null;
+                    System.out.println("Warning: Character " + to + " is already mapped to another key. Skipping.");
+                    continue;
                 }
                 plugBoardMap.put(from, to);
+                plugBoardMap.put(to, from);
             } else {
-                this.plugBoardMap = null;
+                System.out.println("Invalid input format: " + mapping);
+                return; // Exit with error
             }
         }
+        // Print mappings
+        for (Map.Entry<Character, Character> plug : plugBoardMap.entrySet()) {
+            System.out.println("Key: " + plug.getKey() + " -> Value: " + plug.getValue());
+        }
+        // Assign validated map
         this.plugBoardMap = plugBoardMap;
     }
+
 }
