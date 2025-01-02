@@ -17,11 +17,11 @@ public class CaesarEnigma implements  EncryptionAlgorithm{
         this.rotationKey = 0;
     }
     public String encrypt(String cleartext) {
-        String wordPlugged = plugBoard(cleartext);
+        String word1Plug = plugBoard(cleartext);
         StringBuilder encryptedWord = new StringBuilder();
         int alphabetSize = this.alphabet.length();
-        for (int i = 0; i < wordPlugged.length(); i++) {
-            char letter = wordPlugged.charAt(i);
+        for (int i = 0; i < word1Plug.length(); i++) {
+            char letter = word1Plug.charAt(i);
             int originalPosition = this.alphabet.indexOf(letter);
             if (originalPosition != -1) {
                 int inc = i * this.increment;
@@ -31,7 +31,7 @@ public class CaesarEnigma implements  EncryptionAlgorithm{
                 encryptedWord.append(letter);
             }
         }
-        return plugBoard(encryptedWord.toString());
+        return plugBoard(encryptedWord.toString()); //word2Plug
     }
     private String plugBoard(String word){
         StringBuilder newWord = new StringBuilder();
@@ -45,11 +45,11 @@ public class CaesarEnigma implements  EncryptionAlgorithm{
         return newWord.toString();
     }
     public String decrypt(String ciphertext) {
-        String wordPlugged = plugBoard(ciphertext);
+        String word1Plug = plugBoard(ciphertext);
         StringBuilder originalWord = new StringBuilder();
         int alphabetSize = this.alphabet.length();
-        for (int i = 0; i < wordPlugged.length(); i++) {
-            char letter = wordPlugged.charAt(i);
+        for (int i = 0; i < word1Plug.length(); i++) {
+            char letter = word1Plug.charAt(i);
             int letterPosition = this.alphabet.indexOf(letter);
             if (letterPosition != -1) {
                 int inc = i * this.increment;
@@ -59,7 +59,7 @@ public class CaesarEnigma implements  EncryptionAlgorithm{
                 originalWord.append(letter);
             }
         }
-        return plugBoard(originalWord.toString());
+        return plugBoard(originalWord.toString()); //word2Plug
     }
     public void configure(String configurationFilePath) throws Exception {
         try{
